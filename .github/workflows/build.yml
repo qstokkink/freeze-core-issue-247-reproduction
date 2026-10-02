@@ -1,0 +1,29 @@
+name: Build
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check-out repository
+        uses: actions/checkout@v6
+      - name: Setup latest Alpine Linux
+        uses: jirutka/setup-alpine@v1
+        id: alpine-target
+        with:
+          shell-name: alpine-x86_64.sh
+          arch: x86_64
+          branch: v3.23
+          packages: python3-dev py3-pip py3-gobject3 py3-lz4 build-base abuild doas sudo shadow-login cmake protobuf-dev pkgconf git
+      - name: Build musl Executables (Alpine musl x86_64)
+        shell: alpine-x86_64.sh {0}
+        run: |
+          python3 -m venv ./.venv --system-site-packages
+          . ./.venv/bin/activate 
+
+          # A
+          python3 -m pip install --upgrade freeze-core==0.7.5
+          python3 -c 'from importlib import resources;from pathlib import Path;print(Path(str((resources.files("freeze_core")/"bases"/"console-cpython-312-x86_64-linux-musl"))).exists())'
+         
+          # B
+          python3 -m pip install --upgrade freeze-core==0.7.6
+          python3 -c 'from importlib import resources;from pathlib import Path;print(Path(str((resources.files("freeze_core")/"bases"/"console-cpython-312-x86_64-linux-musl"))).exists())'
